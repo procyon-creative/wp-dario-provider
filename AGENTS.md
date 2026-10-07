@@ -63,15 +63,20 @@ CI runs this on every PR with the deferred-exception list applied. See [docs/plu
 
 ## Development Rules
 
-### Red-Green-TDD (MANDATORY)
+### Red-Green-TDD
 
-All code changes MUST follow strict Red-Green TDD:
+Red-Green TDD applies to code changes only, not documentation. Every code change follows it:
 
 1. **RED**: Write a failing test first. Run it. See it fail.
 2. **GREEN**: Write the minimum code to make the test pass.
 3. **REFACTOR**: Clean up while keeping tests green.
 
-No implementation without a test. No refactoring without green tests.
+No code without a test. No refactoring without green tests.
+
+### Implementation and prototypes
+
+- **Implementation is handed to a subagent**, not done in the main session.
+- **`/prototype` needs Nick's approval** before it starts.
 
 ### Git & Commit Rules
 
@@ -130,3 +135,17 @@ Secret fields render as empty `password` inputs with `placeholder="*****"` whene
 - **Dario base URL is configurable.** Check `DARIO_BASE_URL` constant or env var before assuming `localhost:3456`. When you change how the base URL resolves, also update `DarioSidecar::allowedHostPort()` — that's what feeds the `http_request_host_is_external` and `http_allowed_safe_ports` filters. Without a matching whitelist, `wp_safe_remote_request` blocks the call (WPD-27).
 - **Model list is curated, not fetched.** Dario does expose `/v1/models` now, but it only returns the Claude models its native subscription backend supports — GPT models pass through Dario's OpenAI-compat backend on demand. The hardcoded list in `DarioModelMetadataDirectory::DEFAULT_MODELS` always exposes both Claude AND GPT model IDs to consumers regardless of which backends the admin has configured. If we ever switch to dynamic fetching, GPT models would disappear from the picker until the admin runs `dario backend add openai` and the connector reads back the augmented list.
 - **Custom autoloader, not Composer's.** The `src/autoload.php` handles PSR-4 for the `Procyon\Dario\` namespace. Composer's autoloader only handles `vendor/` dependencies.
+
+## Agent skills
+
+### Issue tracker
+
+Jira, with `docs/jira.md` as the source of truth. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five triage roles, applied as Jira labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.

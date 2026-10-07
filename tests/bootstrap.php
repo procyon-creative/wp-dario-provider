@@ -18,6 +18,13 @@ if ( ! function_exists( 'esc_html' ) ) {
 	}
 }
 
+// __() wraps user-facing messages returned from src/. Identity stub.
+if ( ! function_exists( '__' ) ) {
+	function __( $text, $domain = 'default' ): string {
+		return (string) $text;
+	}
+}
+
 // WP_Error is the only WP class WP_Filesystem_Direct's constructor touches.
 // Stub it as a no-op container so the constructor doesn't fatal.
 if ( ! class_exists( 'WP_Error' ) ) {

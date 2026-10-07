@@ -6,6 +6,7 @@ parameters:
   paths:
     - src
     - procyon-dario-provider.php
+    - scripts
   bootstrapFiles:
     - tests/bootstrap.php
     - wordpress/wp-includes/php-ai-client/autoload.php

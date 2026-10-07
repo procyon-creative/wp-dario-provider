@@ -1,7 +1,8 @@
 === Dario AI Connector ===
 Contributors:      nicolasgalvez
 Tags:              ai, llm, connector, openai, claude
-Tested up to:      7.0
+Requires at least: 7.0
+Tested up to:      7.1
 Stable tag:        0.2.3
 License:           GPL-2.0-or-later
 License URI:       https://spdx.org/licenses/GPL-2.0-or-later.html

@@ -121,13 +121,23 @@ npm ci
 ### Tests + checks (same scripts run locally and in CI)
 
 ```bash
-npm run lint         # php -l on src/+tests/, node --check on sidecar/*.mjs
+npm run lint         # php -l on src/+tests/+scripts/, node --check on sidecar/*.mjs
+npm run analyze      # PHPStan static analysis
 npm test             # PHP unit tests (host-side, fast)
 npm run check:pcp    # Plugin Check via Lando — requires `lando start` first
-npm run check        # everything (lint + test + check:pcp)
+npm run test:e2e     # Playwright browser tests against the Lando site — requires `lando start` first
+npm run check        # everything (lint + analyze + test + check:pcp + test:e2e)
 ```
 
 CI runs the exact same scripts. PHP linting also runs via husky + lint-staged on commit.
+
+`npm run test:e2e` drives http://wp-dario-test.lndo.site (admin/admin) in Chromium with `@playwright/test` and `@wordpress/e2e-test-utils-playwright`. Before the first run, install the browser once:
+
+```bash
+npx playwright install chromium
+```
+
+The specs live in `tests/e2e/specs/`. Each one resets the plugin's options and its backend file through `lando wp`, so they can run in any order and repeat. Global setup turns on `WP_DEBUG` and `WP_DEBUG_DISPLAY` in the Lando site's `wp-config.php` so the specs can see PHP warnings on the page. Failure traces and screenshots go to `test-results/`, and the HTML report to `playwright-report/` (`npx playwright show-report`).
 
 ### Local dev environment
 
@@ -135,7 +145,13 @@ CI runs the exact same scripts. PHP linting also runs via husky + lint-staged on
 lando start          # boots WordPress + auto-installs plugin, theme, and test companions
 ```
 
-`lando start` is idempotent — it sets up WordPress 7.0 RC4, the `twentytwentyfive` theme, and activates `procyon-dario-provider`, the `ai` consumer plugin (for end-to-end testing), and `plugin-check` (for PCP runs). No follow-up commands needed.
+`lando start` is idempotent — it sets up the latest WordPress release, the `twentytwentyfive` theme, and activates `procyon-dario-provider`, the `ai` consumer plugin (for end-to-end testing), and `plugin-check` (for PCP runs). No follow-up commands needed.
+
+`lando start` downloads WordPress only when `wordpress/` has no install, so an existing site keeps the version it was built with. To move an existing site to the latest release, update it in place. This keeps the database and files:
+
+```bash
+lando wp core update
+```
 
 ### Conventional Commits
 

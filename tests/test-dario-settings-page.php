@@ -21,4 +21,32 @@ assert(
 	'DarioSettingsPage.php must still show `dario login` as the shell fallback.'
 );
 
+// Saving settings syncs the backend through OpenAiBackendSync, which reads
+// effective settings (overrides applied). The page must not write the backend
+// file from the stored values itself.
+assert(
+	false !== strpos( $source, 'OpenAiBackendSync::run()' ),
+	'handleSaveSettings must sync the backend via OpenAiBackendSync::run().'
+);
+assert(
+	false === strpos( $source, 'DarioBackendConfig::save(' ),
+	'DarioSettingsPage.php must not call DarioBackendConfig::save() directly.'
+);
+
+// No shipped code hard-codes an AI provider endpoint (Plugin Check
+// AIProvider.DirectIntegration).
+$shipped = [ __DIR__ . '/../procyon-dario-provider.php' ];
+$iterator = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( __DIR__ . '/../src', FilesystemIterator::SKIP_DOTS ) );
+foreach ( $iterator as $file ) {
+	if ( $file->isFile() ) {
+		$shipped[] = $file->getPathname();
+	}
+}
+foreach ( $shipped as $path ) {
+	assert(
+		false === stripos( (string) file_get_contents( $path ), 'api.openai.com' ),
+		'shipped file must not reference api.openai.com: ' . $path
+	);
+}
+
 echo "test-dario-settings-page ok\n";

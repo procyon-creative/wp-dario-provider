@@ -48,7 +48,7 @@ class DarioSettings {
 			'proxy_api_key'          => '',
 			'openai_backend_enabled' => false,
 			'openai_backend_name'    => 'wordpress',
-			'openai_base_url'        => 'https://api.openai.com/v1',
+			'openai_base_url'        => '',
 			'openai_api_key'         => '',
 			'openai_default_model'   => '',
 		];
@@ -175,16 +175,10 @@ class DarioSettings {
 					$sanitized[ $key ] = self::isValidBackendName( $name ) ? $name : (string) $default;
 					break;
 
+				// openai_base_url has no default and is kept as typed: the
+				// backend sync rejects a blank or invalid URL loudly
+				// (OpenAiBackendSync) instead of substituting a provider URL.
 				case 'openai_base_url':
-					$url = is_scalar( $value ) ? trim( (string) $value ) : '';
-					if ( $url === '' ) {
-						$sanitized[ $key ] = (string) $default;
-						break;
-					}
-					$filtered = filter_var( $url, FILTER_VALIDATE_URL );
-					$sanitized[ $key ] = $filtered !== false ? $filtered : (string) $default;
-					break;
-
 				case 'node_binary':
 				case 'proxy_host':
 				case 'openai_default_model':
@@ -202,6 +196,10 @@ class DarioSettings {
 
 	public static function isValidBackendName( string $name ): bool {
 		return (bool) preg_match( '/^[A-Za-z0-9][A-Za-z0-9_\-.]{0,63}$/', $name );
+	}
+
+	public static function isValidUrl( string $url ): bool {
+		return $url !== '' && filter_var( $url, FILTER_VALIDATE_URL ) !== false;
 	}
 
 	public static function update( array $values ): bool {

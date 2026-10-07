@@ -93,12 +93,14 @@ Fields:
 
 - Enable backend checkbox.
 - Backend name, default `wordpress`.
-- Base URL, default `https://api.openai.com/v1`.
+- Base URL, no default. A fresh install shows it empty.
 - API key password input.
 - Optional default model.
 
 Behavior:
 
+- On save, the backend uses the effective settings: a `DARIO_OPENAI_*` constant or environment variable wins over the stored option.
+- With the backend enabled, a blank or invalid base URL, or a blank API key, is an error shown on the settings page, and the backend file is not written or changed. A disabled backend with blank fields is fine.
 - On save, write Dario backend JSON to the runtime user’s Dario config dir:
 
   ```text
@@ -112,7 +114,7 @@ Behavior:
     "name": "wordpress",
     "provider": "openai",
     "apiKey": "sk-...",
-    "baseUrl": "https://api.openai.com/v1"
+    "baseUrl": "https://llm.example.com/v1"
   }
   ```
 
@@ -172,7 +174,7 @@ Suggested settings:
   'proxy_api_key' => '',
   'openai_backend_enabled' => false,
   'openai_backend_name' => 'wordpress',
-  'openai_base_url' => 'https://api.openai.com/v1',
+  'openai_base_url' => '',
   'openai_api_key' => '',
   'openai_default_model' => '',
 ]

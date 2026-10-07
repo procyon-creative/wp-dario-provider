@@ -1,0 +1,63 @@
+name: Update WordPress versions
+
+# Dependabot-style bump for readme.txt `Tested up to` and `Requires at least`
+# (readme.txt + plugin header). When a newer WordPress release exists, opens
+# (or updates) a PR setting `Tested up to` to it and `Requires at least` to
+# the previous major (WooCommerce's L-1 policy), then starts CI on the PR
+# branch against both versions.
+#
+# The PR is opened with the default GITHUB_TOKEN, which doesn't trigger
+# pull_request workflows, so CI is started via workflow_dispatch, which
+# GITHUB_TOKEN may trigger. Bot bump PRs need no WPD ticket (docs/jira.md).
+#
+# Requires the repo setting Settings -> Actions -> General -> "Allow GitHub
+# Actions to create and approve pull requests".
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Bump version requirements
+        id: versions
+        run: php scripts/wp-versions.php bump >> "$GITHUB_OUTPUT"
+
+      - name: Open or update the bump PR
+        id: cpr
+        if: steps.versions.outputs.tested != ''
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          branch: bot/update-wp-versions
+          delete-branch: true
+          commit-message: 'chore: test up to WordPress ${{ steps.versions.outputs.tested }}, require ${{ steps.versions.outputs.required }}'
+          title: 'chore: test up to WordPress ${{ steps.versions.outputs.tested }}, require ${{ steps.versions.outputs.required }}'
+          body: |
+            Automated by `.github/workflows/update-wp-versions.yml`.
+
+            - `Tested up to` (readme.txt): ${{ steps.versions.outputs.tested }}
+            - `Requires at least` (readme.txt + plugin header): ${{ steps.versions.outputs.required }}
+
+            CI runs the full `npm run check` against the latest WordPress release and the newest ${{ steps.versions.outputs.required }}.x patch. Bot version-bump PRs need no WPD ticket.
+
+      - name: Start CI on the PR branch
+        if: steps.cpr.outputs.pull-request-operation == 'created' || steps.cpr.outputs.pull-request-operation == 'updated'
+        # Uses the gh CLI preinstalled on GitHub-hosted runners.
+        run: gh workflow run ci.yml --ref "${{ steps.cpr.outputs.pull-request-branch }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

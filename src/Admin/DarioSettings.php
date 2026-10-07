@@ -175,13 +175,10 @@ class DarioSettings {
 					$sanitized[ $key ] = self::isValidBackendName( $name ) ? $name : (string) $default;
 					break;
 
+				// openai_base_url has no default and is kept as typed: the
+				// backend sync rejects a blank or invalid URL loudly
+				// (OpenAiBackendSync) instead of substituting a provider URL.
 				case 'openai_base_url':
-					// No fallback URL: a blank or invalid value is stored empty so
-					// the backend sync reports it instead of guessing a provider.
-					$url               = is_scalar( $value ) ? trim( (string) $value ) : '';
-					$sanitized[ $key ] = self::isValidUrl( $url ) ? $url : '';
-					break;
-
 				case 'node_binary':
 				case 'proxy_host':
 				case 'openai_default_model':

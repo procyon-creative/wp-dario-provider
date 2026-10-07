@@ -17,7 +17,7 @@ use Procyon\Dario\Sidecar\DarioBackendConfig;
  * Enabled with missing or invalid required config is an error, and the
  * backend file is left exactly as it was.
  *
- * @since 0.2.0
+ * @since 0.2.4
  */
 class OpenAiBackendSync {
 

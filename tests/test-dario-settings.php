@@ -55,11 +55,12 @@ $sanitized3 = DarioSettings::sanitize( [
 ] );
 assert( 'wordpress' === $sanitized3['openai_backend_name'] );
 
-// Invalid or blank base URL is stored empty, never replaced by a provider URL.
+// Base URL is never replaced by a provider URL. An invalid value is kept as
+// typed so the admin sees it, and the backend sync rejects it loudly.
 $sanitized4 = DarioSettings::sanitize( [
-	'openai_base_url' => 'not-a-url',
+	'openai_base_url' => ' not-a-url ',
 ] );
-assert( '' === $sanitized4['openai_base_url'], 'invalid base URL is stored empty' );
+assert( 'not-a-url' === $sanitized4['openai_base_url'], 'invalid base URL is kept as typed' );
 $sanitized5 = DarioSettings::sanitize( [
 	'openai_base_url' => '   ',
 ] );

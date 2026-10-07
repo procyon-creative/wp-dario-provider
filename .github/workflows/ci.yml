@@ -5,6 +5,9 @@ on:
     branches: [main]
   push:
     branches: [main]
+  # Started by update-wp-versions.yml on its bump PR branch (PRs opened with
+  # GITHUB_TOKEN don't trigger pull_request runs), or by hand.
+  workflow_dispatch:
 
 # lando/setup-lando is still pinned to Node 20 internally. GitHub's runners
 # remove Node 20 on 2026-09-16. Force any Node-20-bundled action to run
@@ -13,17 +16,27 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
-# Single job that runs the same `npm run check` a developer runs locally:
+# Runs the same `npm run check` a developer runs locally:
 #   npm run lint        php -l + node --check
+#   npm run analyze     PHPStan
 #   npm test            PHP unit tests
 #   npm run check:pcp   Plugin Check via Lando (requires lando start first)
 #
-# No CI-only assertions. If `npm run check` passes locally, this job passes.
+# No CI-only assertions. If `npm run check` passes locally, a leg passes.
+#
+# Ordinary PRs and pushes check against the latest WordPress release only.
+# workflow_dispatch runs (version-bump PRs, manual) and pull_request runs on
+# the bot's bump branch (e.g. after "Update branch") also check against the
+# newest patch of readme.txt's `Requires at least`.
 
 jobs:
-  check:
-    name: npm run check
+  check-wp:
+    name: npm run check (WordPress ${{ matrix.wp }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        wp: ${{ (github.event_name == 'workflow_dispatch' || github.head_ref == 'bot/update-wp-versions') && fromJSON('["latest","minimum"]') || fromJSON('["latest"]') }}
     steps:
       - uses: actions/checkout@v6
 
@@ -43,11 +56,16 @@ jobs:
       - name: Install Node dependencies
         run: npm ci --ignore-scripts
 
-      - name: Install wp-cli + download WordPress (for tests that require php-ai-client)
+      # Tests and PHPStan load core from ./wordpress, and `lando start` skips
+      # its own download when ./wordpress already exists, so this one download
+      # sets the WordPress version for the whole leg.
+      - name: Install wp-cli + download WordPress (${{ matrix.wp }})
         run: |
           curl -fsSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /tmp/wp
           chmod +x /tmp/wp
-          /tmp/wp core download --version=7.0-RC4 --path=wordpress --skip-content
+          version=$(php scripts/wp-versions.php download-version "${{ matrix.wp }}")
+          /tmp/wp core download --version="$version" --path=wordpress --skip-content
+          /tmp/wp core version --path=wordpress
 
       - name: Lint
         run: npm run lint
@@ -72,3 +90,15 @@ jobs:
         run: |
           lando logs || true
           lando ssh -s appserver -c 'cat /app/wordpress/wp-content/dario-provider/dario-sidecar.log 2>/dev/null || true' || true
+
+  # Branch protection requires a status check named `npm run check`. This
+  # gate reports it once every WordPress leg above has passed, so one check
+  # name covers both the single-leg PR run and the two-leg dispatched run.
+  check:
+    name: npm run check
+    needs: check-wp
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All WordPress legs passed
+        run: test "${{ needs.check-wp.result }}" = success

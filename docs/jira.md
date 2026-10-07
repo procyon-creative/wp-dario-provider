@@ -29,6 +29,7 @@ gh secret set JIRA_API_TOKEN  # paste the token at the prompt
 
 ## Workflow Rules
 - **Shipped changes need a ticket.** A branch that ships a change references a `WPD-NNN` Jira ticket. If one doesn't exist, create it before opening the branch.
+- **Bot version-bump PRs need no ticket.** PRs opened by `.github/workflows/update-wp-versions.yml` (branch `bot/update-wp-versions`) only change `Tested up to` / `Requires at least`, and need no `WPD-NNN` ticket.
 - **Planning needs no ticket.** `/grill-with-docs`, `/to-spec`, and `/to-tickets` run before tickets exist; `/to-tickets` creates them.
 - **`/prototype` needs Nick's approval** before it starts.
 - **Branch name format:** `WPD-NNN-short-description` (e.g. `WPD-3-ci-lando-and-jira-sync`).

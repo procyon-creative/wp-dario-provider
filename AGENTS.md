@@ -37,17 +37,17 @@ npm ci
 ```bash
 lando start          # Boots Lando + auto-installs WP, theme, and plugin
 ```
-On first run this downloads WP 7.0 RC4 (without bundled themes/plugins via `wp core download --skip-content`), installs core, installs the `twentytwentyfive` theme, and activates `procyon-dario-provider`. Idempotent on subsequent starts and on `lando rebuild -y`. The site is at http://wp-dario-test.lndo.site/ (admin/admin).
+On first run this downloads the latest WordPress release (without bundled themes/plugins via `wp core download --skip-content`), installs core, installs the `twentytwentyfive` theme, and activates `procyon-dario-provider`. Idempotent on subsequent starts and on `lando rebuild -y`. The site is at http://wp-dario-test.lndo.site/ (admin/admin).
 
 ### Tests + checks (same scripts run locally and in CI)
 ```bash
-npm run lint         # php -l on src/+tests/, node --check on sidecar/*.mjs
+npm run lint         # php -l on src/+tests/+scripts/, node --check on sidecar/*.mjs
 npm run analyze      # PHPStan static analysis (level 5, WP stubs)
 npm test             # PHP unit-style tests (host-side, fast)
 npm run check:pcp    # Plugin Check via Lando — requires `lando start` first
 npm run check        # everything (lint + analyze + test + check:pcp)
 ```
-CI runs the exact same scripts in one sequential job (`npm run check`). No CI-only assertions — if you can run `npm run check` locally, you have the same gate CI runs.
+CI runs the exact same `npm run check` scripts, one job per WordPress version (see `ci.yml` below). No CI-only assertions — if you can run `npm run check` locally, you have the same gate CI runs.
 
 ### Deploy plugin code changes into the running WP
 ```bash
@@ -91,7 +91,8 @@ No code without a test. No refactoring without green tests.
 ### GitHub Actions Rules
 
 - **Pin `procyon-creative/jira-action-man` to a specific stable tag** (currently `v1.0.0`; no moving `v1` major tag is published). Re-check on each `/jira-setup` run.
-- **`.github/workflows/ci.yml`** runs on every PR + push to `main`. Single job that runs the same `npm run check` a developer runs locally: lint → unit tests → Lando boot → Plugin Check. No CI-only assertions; if `npm run check` passes locally, this passes.
+- **`.github/workflows/ci.yml`** runs on every PR + push to `main`, and on `workflow_dispatch`. Each leg runs the same `npm run check` a developer runs locally: lint → static analysis → unit tests → Lando boot → Plugin Check. PRs and pushes test against the latest WordPress release only; `workflow_dispatch` runs and PRs from `bot/update-wp-versions` add a leg for the newest patch of readme.txt's `Requires at least`. A gate job named `npm run check` reports once all legs pass. No CI-only assertions; if `npm run check` passes locally, a leg passes.
+- **`.github/workflows/update-wp-versions.yml`** (weekly + manual) runs `php scripts/wp-versions.php bump`: `Tested up to` becomes the latest WordPress release and `Requires at least` the previous major (7.1 → 7.0, 8.0 → 7.9) in readme.txt and the plugin header. It never downgrades. On a change it opens a PR from `bot/update-wp-versions` with `peter-evans/create-pull-request` and the default `GITHUB_TOKEN`, then starts CI on it via `workflow_dispatch`. This needs the repo setting "Allow GitHub Actions to create and approve pull requests" (Settings → Actions → General). Logic lives in `scripts/WordPressVersionRequirements.php` and `scripts/WordPressVersionBump.php` (dev tooling, namespace `Procyon\Dario\Tooling\`, loaded with `require_once`, not shipped in the zip); `scripts/wp-versions.php` is the CLI client.
 - **Branch protection on `main`** requires the `npm run check` status check to pass before a PR can merge. Force-push and branch deletion are disabled. Re-apply via `gh api -X PUT --input docs/branch-protection.json repos/procyon-creative/wp-dario-provider/branches/main/protection` if it ever gets cleared.
 - **`.github/workflows/jira.yml`** syncs ticket metadata to PRs and transitions tickets to `Done` on merge. See [docs/jira.md](docs/jira.md) for required secrets and board-column notes.
 - **`.github/workflows/main.yml`** builds the release zip and attaches it to the GitHub release on `release: published` (and on `push: branches test` for workflow testing). The previous `push: tags v*` trigger was removed (WPD-28) because it raced `gh release create`.

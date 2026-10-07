@@ -121,10 +121,11 @@ npm ci
 ### Tests + checks (same scripts run locally and in CI)
 
 ```bash
-npm run lint         # php -l on src/+tests/, node --check on sidecar/*.mjs
+npm run lint         # php -l on src/+tests/+scripts/, node --check on sidecar/*.mjs
+npm run analyze      # PHPStan static analysis
 npm test             # PHP unit tests (host-side, fast)
 npm run check:pcp    # Plugin Check via Lando — requires `lando start` first
-npm run check        # everything (lint + test + check:pcp)
+npm run check        # everything (lint + analyze + test + check:pcp)
 ```
 
 CI runs the exact same scripts. PHP linting also runs via husky + lint-staged on commit.
@@ -135,7 +136,7 @@ CI runs the exact same scripts. PHP linting also runs via husky + lint-staged on
 lando start          # boots WordPress + auto-installs plugin, theme, and test companions
 ```
 
-`lando start` is idempotent — it sets up WordPress 7.0 RC4, the `twentytwentyfive` theme, and activates `procyon-dario-provider`, the `ai` consumer plugin (for end-to-end testing), and `plugin-check` (for PCP runs). No follow-up commands needed.
+`lando start` is idempotent — it sets up the latest WordPress release, the `twentytwentyfive` theme, and activates `procyon-dario-provider`, the `ai` consumer plugin (for end-to-end testing), and `plugin-check` (for PCP runs). No follow-up commands needed.
 
 ### Conventional Commits
 

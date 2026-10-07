@@ -61,6 +61,12 @@ assert( false === $bad['ok'] );
 $blank = DarioBackendConfig::save( 'wp', '', 'https://x' );
 assert( false === $blank['ok'] );
 
+// Missing base url fails cleanly and writes nothing.
+$no_url = DarioBackendConfig::save( 'wp-no-url', 'k', '' );
+assert( false === $no_url['ok'] );
+assert( 'missing base url' === $no_url['error'] );
+assert( false === DarioBackendConfig::exists( 'wp-no-url' ) );
+
 // Remove cleans up.
 assert( true === DarioBackendConfig::remove( 'wordpress-test' ) );
 assert( false === DarioBackendConfig::exists( 'wordpress-test' ) );

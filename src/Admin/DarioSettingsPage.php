@@ -412,23 +412,12 @@ class DarioSettingsPage {
 		DarioSettings::update( $sanitized );
 		DarioSidecar::syncConnectorApiKey();
 
-		$detail = '';
-		if ( $sanitized['openai_backend_enabled'] && $sanitized['openai_api_key'] !== '' ) {
-			$result = DarioBackendConfig::save(
-				(string) $sanitized['openai_backend_name'],
-				(string) $sanitized['openai_api_key'],
-				(string) $sanitized['openai_base_url']
-			);
-			$detail = $result['ok']
-				/* translators: %s: full filesystem path of the written backend JSON file. */
-				? sprintf( __( 'Backend file written to %s.', 'procyon-dario-provider' ), (string) ( $result['path'] ?? '' ) )
-				/* translators: %s: error message describing why the backend file could not be written. */
-				: sprintf( __( 'Backend file not written: %s.', 'procyon-dario-provider' ), (string) ( $result['error'] ?? 'unknown error' ) );
-		} elseif ( ! $sanitized['openai_backend_enabled'] ) {
-			DarioBackendConfig::remove( (string) $sanitized['openai_backend_name'] );
+		$sync = OpenAiBackendSync::run();
+		if ( $sync['ok'] ) {
+			$this->setFlash( __( 'Settings saved.', 'procyon-dario-provider' ), $sync['message'] );
+		} else {
+			$this->setFlash( __( 'Settings saved, but the OpenAI backend file was not written.', 'procyon-dario-provider' ), $sync['message'], true );
 		}
-
-		$this->setFlash( __( 'Settings saved.', 'procyon-dario-provider' ), $detail );
 		$this->redirectBack();
 	}
 

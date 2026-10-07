@@ -14,7 +14,7 @@ assert( 3456 === $defaults['proxy_port'] );
 assert( '' === $defaults['proxy_api_key'] );
 assert( false === $defaults['openai_backend_enabled'] );
 assert( 'wordpress' === $defaults['openai_backend_name'] );
-assert( 'https://api.openai.com/v1' === $defaults['openai_base_url'] );
+assert( '' === $defaults['openai_base_url'], 'fresh install has no OpenAI backend base URL' );
 assert( '' === $defaults['openai_api_key'] );
 assert( '' === $defaults['openai_default_model'] );
 
@@ -26,7 +26,7 @@ $sanitized = DarioSettings::sanitize( [
 	'proxy_api_key'          => 'sk-secret-proxy',
 	'openai_backend_enabled' => 'on',
 	'openai_backend_name'    => 'wp_main',
-	'openai_base_url'        => 'https://api.openai.com/v1',
+	'openai_base_url'        => 'https://llm.example.test/v1',
 	'openai_api_key'         => 'sk-secret-openai',
 	'openai_default_model'   => 'gpt-4o',
 ] );
@@ -55,11 +55,19 @@ $sanitized3 = DarioSettings::sanitize( [
 ] );
 assert( 'wordpress' === $sanitized3['openai_backend_name'] );
 
-// Invalid base URL falls back to default.
+// Invalid or blank base URL is stored empty, never replaced by a provider URL.
 $sanitized4 = DarioSettings::sanitize( [
 	'openai_base_url' => 'not-a-url',
 ] );
-assert( 'https://api.openai.com/v1' === $sanitized4['openai_base_url'] );
+assert( '' === $sanitized4['openai_base_url'], 'invalid base URL is stored empty' );
+$sanitized5 = DarioSettings::sanitize( [
+	'openai_base_url' => '   ',
+] );
+assert( '' === $sanitized5['openai_base_url'], 'blank base URL is stored empty' );
+$sanitized6 = DarioSettings::sanitize( [
+	'openai_base_url' => ' https://llm.example.test/v1 ',
+] );
+assert( 'https://llm.example.test/v1' === $sanitized6['openai_base_url'], 'valid base URL is kept' );
 
 // Backend name validation
 assert( true === DarioSettings::isValidBackendName( 'wordpress' ) );
@@ -110,7 +118,7 @@ update_option( 'procyon_dario_settings', [
 	'proxy_api_key'  => 'sk-existing-proxy',
 	'openai_backend_enabled' => true,
 	'openai_backend_name'    => 'wordpress',
-	'openai_base_url'        => 'https://api.openai.com/v1',
+	'openai_base_url'        => 'https://llm.example.test/v1',
 	'openai_api_key'         => 'sk-existing-openai',
 	'openai_default_model'   => 'gpt-4o',
 ] );
@@ -125,7 +133,7 @@ $preserved = DarioSettings::sanitize( [
 	'proxy_api_key'  => '',
 	'openai_backend_enabled' => '1',
 	'openai_backend_name'    => 'wordpress',
-	'openai_base_url'        => 'https://api.openai.com/v1',
+	'openai_base_url'        => 'https://llm.example.test/v1',
 	'openai_api_key'         => '',
 	'openai_default_model'   => 'gpt-4o',
 ] );

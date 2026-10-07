@@ -39,6 +39,8 @@ lando start          # Boots Lando + auto-installs WP, theme, and plugin
 ```
 On first run this downloads the latest WordPress release (without bundled themes/plugins via `wp core download --skip-content`), installs core, installs the `twentytwentyfive` theme, and activates `procyon-dario-provider`. Idempotent on subsequent starts and on `lando rebuild -y`. The site is at http://wp-dario-test.lndo.site/ (admin/admin).
 
+WordPress is downloaded only when `wordpress/` has no install, so an existing site keeps its version; to move it to the latest release, run `lando destroy -y && rm -rf wordpress && lando start` (wipes the local test site's database and files).
+
 ### Tests + checks (same scripts run locally and in CI)
 ```bash
 npm run lint         # php -l on src/+tests/+scripts/, node --check on sidecar/*.mjs

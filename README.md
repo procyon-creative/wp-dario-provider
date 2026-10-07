@@ -138,6 +138,12 @@ lando start          # boots WordPress + auto-installs plugin, theme, and test c
 
 `lando start` is idempotent — it sets up the latest WordPress release, the `twentytwentyfive` theme, and activates `procyon-dario-provider`, the `ai` consumer plugin (for end-to-end testing), and `plugin-check` (for PCP runs). No follow-up commands needed.
 
+`lando start` downloads WordPress only when `wordpress/` has no install, so an existing site keeps the version it was built with. To move an existing site to the latest release, destroy and rebuild it. This wipes the local test site's database and files:
+
+```bash
+lando destroy -y && rm -rf wordpress && lando start
+```
+
 ### Conventional Commits
 
 This project uses [conventional commits](https://www.conventionalcommits.org/) enforced by commitlint:

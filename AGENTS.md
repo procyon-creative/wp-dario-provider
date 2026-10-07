@@ -143,7 +143,7 @@ Secret fields render as empty `password` inputs with `placeholder="*****"` whene
 
 ### Vendored skills
 
-Skills are vendored in `.agents/skills/`, pinned in `skills-lock.json`, and symlinked into `.claude/skills/`. Agents can invoke all of them except `/prototype`. See `docs/agents/skills.md`.
+Skills are vendored in `.agents/skills/`, pinned in `skills-lock.json`, and symlinked into `.claude/skills/`: Matt Pocock's engineering flow plus WordPress's official `wordpress/agent-skills` (start with `wordpress-router`). Agents can invoke all of them except `/prototype`. See `docs/agents/skills.md`.
 
 ### Issue tracker
 

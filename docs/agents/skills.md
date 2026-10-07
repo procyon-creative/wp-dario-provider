@@ -1,6 +1,9 @@
 # Agent skills in this repo
 
-Matt Pocock's skills (`mattpocock/skills`) are **vendored in git**, not only installed per machine through the plugin.
+Two skill sets are **vendored in git**, installed with `npx skills` rather than Claude plugins, so every agent in the repo can use them:
+
+- Matt Pocock's skills (`mattpocock/skills`): the engineering flow.
+- WordPress's official skills (`wordpress/agent-skills`): plugin development, PHPStan, WP-CLI, REST API, Plugin Directory guidelines, and the rest. Start with `wordpress-router`.
 
 ## Layout
 
@@ -14,7 +17,7 @@ Do not gitignore `.agents/` or `.claude/skills/`. `.gitignore` ignores the rest 
 
 ## Add or refresh a skill
 
-1. `npx skills add mattpocock/skills -a claude-code -y --copy -s <skill>` (pass several names after `-s` to add or refresh more than one). This writes `skills-lock.json` and copies the tree to `.claude/skills/<skill>/`.
+1. `npx skills add <source> -a claude-code -y --copy -s <skill>`, where `<source>` is `mattpocock/skills` or `wordpress/agent-skills` (pass several names after `-s` to add or refresh more than one). This writes `skills-lock.json` and copies the tree to `.claude/skills/<skill>/`.
 2. Move the tree to `.agents/skills/<skill>/` and replace it with a symlink:
    `rm -rf .agents/skills/<skill> && mv .claude/skills/<skill> .agents/skills/<skill> && ln -s ../../.agents/skills/<skill> .claude/skills/<skill>`
 3. Re-apply the local patch (below).

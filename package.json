@@ -11,12 +11,15 @@
     "analyze": "vendor/bin/phpstan analyse --memory-limit=512M --no-progress",
     "test": "php -d zend.assertions=1 -d assert.exception=1 tests/test-model-metadata-directory.php && php -d zend.assertions=1 -d assert.exception=1 tests/test-dario-sidecar.php && php -d zend.assertions=1 -d assert.exception=1 tests/test-dario-settings.php && php -d zend.assertions=1 -d assert.exception=1 tests/test-dario-backend-config.php && php -d zend.assertions=1 -d assert.exception=1 tests/test-openai-backend-sync.php && php -d zend.assertions=1 -d assert.exception=1 tests/test-migration-shim.php && php -d zend.assertions=1 -d assert.exception=1 tests/test-dario-claude-auth.php && php -d zend.assertions=1 -d assert.exception=1 tests/test-dario-settings-page.php && php -d zend.assertions=1 -d assert.exception=1 tests/test-skills-vendor.php && php -d zend.assertions=1 -d assert.exception=1 tests/test-wp-version-requirements.php && php -d zend.assertions=1 -d assert.exception=1 tests/test-wp-version-bump.php",
     "check:pcp": "scripts/check-pcp.sh",
-    "check": "npm run lint && npm run analyze && npm test && npm run check:pcp",
+    "test:e2e": "playwright test",
+    "check": "npm run lint && npm run analyze && npm test && npm run check:pcp && npm run test:e2e",
     "prepare": "husky"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
     "@commitlint/config-conventional": "^19.0.0",
+    "@playwright/test": "^1.64.0",
+    "@wordpress/e2e-test-utils-playwright": "^3.0.0",
     "husky": "^9.1.0",
     "lint-staged": "^15.0.0"
   },

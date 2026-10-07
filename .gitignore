@@ -14,6 +14,11 @@ wordpress/
 # dotenv
 .env
 
+# Playwright e2e output and the saved admin login (storage state)
+/test-results/
+/playwright-report/
+/artifacts/storage-states/
+
 # IDE
 .idea/
 

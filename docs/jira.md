@@ -28,11 +28,13 @@ gh secret set JIRA_API_TOKEN  # paste the token at the prompt
 ```
 
 ## Workflow Rules
-- **No work without a ticket.** Every branch must reference a `WPD-NNN` Jira ticket. If one doesn't exist, create it before opening the branch.
+- **Shipped changes need a ticket.** A branch that ships a change references a `WPD-NNN` Jira ticket. If one doesn't exist, create it before opening the branch.
+- **Planning needs no ticket.** `/grill-with-docs`, `/to-spec`, and `/to-tickets` run before tickets exist; `/to-tickets` creates them.
+- **`/prototype` needs Nick's approval** before it starts.
 - **Branch name format:** `WPD-NNN-short-description` (e.g. `WPD-3-ci-lando-and-jira-sync`).
 - **Ticket requirements:**
   - **Hours estimate** in `timetracking.originalEstimate` (`30m`, `2h`, `1d`).
-  - **Acceptance Criteria** including the mandatory line: `Use Red/Green TDD`.
+  - **Acceptance Criteria.** Code tickets include the mandatory line `Use Red/Green TDD`; documentation-only tickets omit it.
 - **PR merge → ticket moves to Done.** Handled automatically by `.github/workflows/jira.yml`.
 - **WPD-2 manual transition** was used once to clean up a ticket created before the workflow was installed; future tickets transition automatically.
 

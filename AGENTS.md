@@ -138,6 +138,10 @@ Secret fields render as empty `password` inputs with `placeholder="*****"` whene
 
 ## Agent skills
 
+### Vendored skills
+
+Skills are vendored in `.agents/skills/`, pinned in `skills-lock.json`, and symlinked into `.claude/skills/`. Agents can invoke all of them except `/prototype`. See `docs/agents/skills.md`.
+
 ### Issue tracker
 
 Jira, with `docs/jira.md` as the source of truth. See `docs/agents/issue-tracker.md`.

@@ -21,6 +21,7 @@ env:
 #   npm run analyze     PHPStan
 #   npm test            PHP unit tests
 #   npm run check:pcp   Plugin Check via Lando (requires lando start first)
+#   npm run test:e2e    Playwright browser tests against the Lando site
 #
 # No CI-only assertions. If `npm run check` passes locally, a leg passes.
 #
@@ -84,6 +85,12 @@ jobs:
 
       - name: Plugin Check
         run: npm run check:pcp
+
+      - name: Install Playwright browser (Chromium)
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npm run test:e2e
 
       - name: Show Lando logs on failure
         if: failure()

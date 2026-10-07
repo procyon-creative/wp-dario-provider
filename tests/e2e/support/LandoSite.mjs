@@ -53,28 +53,34 @@ export class LandoSite {
 	/**
 	 * Back to a site with no saved plugin settings and no backend file.
 	 */
-	resetPlugin( backendName = LandoSite.DEFAULT_BACKEND_NAME ) {
+	resetPlugin() {
 		const options = JSON.stringify( LandoSite.PLUGIN_OPTIONS );
-		const file = JSON.stringify( this.backendPath( backendName ) );
 		this.wp( [
 			'eval',
 			`foreach ( json_decode( '${ options }' ) as $o ) { delete_option( $o ); }
-			foreach ( [ ${ file }, ${ file } . '.tmp' ] as $f ) { if ( file_exists( $f ) ) { unlink( $f ); } }`,
+			$f = ${ this.backendPathLiteral() };
+			foreach ( [ $f, $f . '.tmp' ] as $p ) { if ( file_exists( $p ) ) { unlink( $p ); } }`,
 		] );
 	}
 
-	backendPath( backendName = LandoSite.DEFAULT_BACKEND_NAME ) {
-		return `${ LandoSite.BACKENDS_DIR }/${ backendName }.json`;
+	backendPath() {
+		return `${ LandoSite.BACKENDS_DIR }/${ LandoSite.DEFAULT_BACKEND_NAME }.json`;
 	}
 
 	/**
 	 * @return {object|null} The decoded backend file, or null when absent.
 	 */
-	readBackendFile( backendName = LandoSite.DEFAULT_BACKEND_NAME ) {
-		const file = JSON.stringify( this.backendPath( backendName ) );
+	readBackendFile() {
 		return this.evalJson(
-			`$f = ${ file }; echo file_exists( $f ) ? file_get_contents( $f ) : 'null';`
+			`$f = ${ this.backendPathLiteral() }; echo file_exists( $f ) ? file_get_contents( $f ) : 'null';`
 		);
+	}
+
+	/**
+	 * The backend file path as a PHP string literal, for `wp eval` code.
+	 */
+	backendPathLiteral() {
+		return JSON.stringify( this.backendPath() );
 	}
 
 	/**
